@@ -46,7 +46,7 @@ namespace LaChose
             var csv = lines.Where(x => x.Contains("1972")).Select(row => string.Join(";", row.Split('\t')));
 
 
-            File.WriteAllLines(pathOut, csv,  Encoding.UTF8);
+            File.WriteAllLines(pathOut, csv, Encoding.UTF8);
 
         }
 
@@ -242,14 +242,16 @@ namespace LaChose
 
         public static void Mendeleiev()
         {
-
             //CsvToJson();
             //XmlToJson();
 
-            Play();
+            //Play();
 
+            //Affichage();
 
+            //DicoParse();
 
+            SearchWordInChimic();
         }
 
         public static void Play()
@@ -257,7 +259,7 @@ namespace LaChose
             string txt = System.IO.File.ReadAllText(@"C:\Yann\projets\LaChose\LaChose\resources\atomes.json", Encoding.UTF8);
             List<Atome> atomes = JsonConvert.DeserializeObject<List<Atome>>(txt);
 
-            List<string> sequences = new List<string>() { "57", "75", "84", "07", "34", "99", "43", "57", "16", "14", "09", "53", "20", "22", "08", "07"  };
+            List<string> sequences = new List<string>() { "57", "75", "84", "07", "34", "99", "43", "57", "16", "14", "09", "53", "20", "22", "08", "07" };
 
             foreach (string s in sequences)
             {
@@ -266,6 +268,7 @@ namespace LaChose
                 if (a != null)
                     Debug.Write(a.symbole);
             }
+
             Debug.WriteLine("");
         }
 
@@ -274,17 +277,122 @@ namespace LaChose
             string txt = System.IO.File.ReadAllText(@"C:\Yann\projets\LaChose\LaChose\resources\atomes.json", Encoding.UTF8);
             List<Atome> atomes = JsonConvert.DeserializeObject<List<Atome>>(txt);
 
-            foreach (Atome a in atomes.OrderBy(x => x.decouverte_annee))
+            //foreach (Atome a in atomes.OrderBy(x => x.decouverte_annee))
+            //{
+            //    Debug.WriteLine(a.nom + " " + a.symbole + " " + a.decouverte_annee + " ");
+            //}
+
+            foreach (Atome a in atomes.OrderBy(x => x.symbole))
             {
-                Debug.WriteLine(a.nom + " " + a.symbole + " " + a.decouverte_annee + " ");
+                Debug.Write(a.symbole + " ");
             }
+
+
+
+
+        }
+
+        public static void SearchWordInChimic()
+        {
+            string atomJsonTxt = System.IO.File.ReadAllText(@"C:\Yann\projets\LaChose\LaChose\resources\atomes.json", Encoding.UTF8);
+            List<Atome> atomes = JsonConvert.DeserializeObject<List<Atome>>(atomJsonTxt);
+
+            List<string> results = new List<string>();
+            var dicoLines = File.ReadAllLines(@"C:\Yann\projets\LaChose\LaChose\resources\dela-fr-public.txt", Encoding.UTF8);
+
+            foreach (string word in dicoLines)
+            {
+                string workingWord = word;
+                List<Atome> atomsNeeded = new List<Atome>();
+
+                while (workingWord.Length > 0)
+                {
+                    //search 1 letter
+                    string searchLetter = workingWord[0].ToString();
+
+                    Atome a = atomes.FirstOrDefault(x => x.symbole.ToLower() == searchLetter.ToLower());
+
+                    if (a != null)
+                    {
+                        atomsNeeded.Add(a);
+
+                        if (workingWord.Length == 1)
+                        {
+                            //Mot complet
+                            string info = word + " \t " + string.Join(" ", atomsNeeded.Select(x => x.symbole).ToArray()) + " \t " + string.Join(" ", atomsNeeded.Select(x => x.numero).ToArray());
+                            Debug.WriteLine(info);
+                            results.Add(info);
+                            workingWord = ""; //on sort du while et on passe au suivant
+                           
+                        }
+                        else
+                            workingWord = workingWord.Substring(1, workingWord.Length - 1);
+                    }
+                    else
+                    {
+                        //ya pas de résultats en 1 lettre, on tente en 2 lettres
+                                                                                          
+                        if (workingWord.Length >= 2)
+                        {
+                            //search 2 letters 
+                            searchLetter = workingWord.Substring(0, 2);
+                            Atome aa = atomes.FirstOrDefault(x => x.symbole.ToLower() == searchLetter.ToLower());
+
+                            if (aa != null)
+                            {
+                                atomsNeeded.Add(aa);
+
+                                if (workingWord.Length == 2)
+                                {
+                                    //Mot complet
+                                    string info = word + " \t " + string.Join(" ", atomsNeeded.Select(x => x.symbole).ToArray()) + " \t " + string.Join(" ", atomsNeeded.Select(x => x.numero).ToArray());
+                                    Debug.WriteLine(info);
+                                    results.Add(info);
+                                    workingWord = ""; //on sort du while et on passe au suivant                                    
+                                }
+                                else
+                                    workingWord = workingWord.Substring(2, workingWord.Length - 2);
+
+                            }
+                            else
+                            {
+                                //pas de symbole en 1 ou 2 lettres
+                                workingWord = ""; //on sort du while et on passe au suivant
+                            }
+                        }
+                        else
+                        {                            
+                            workingWord = ""; //on sort du while et on passe au suivant
+                        }
+                    }
+                }
+
+            }
+
+            File.WriteAllLines(@"C:\Yann\projets\LaChose\LaChose\resources\results.txt", results, Encoding.UTF8);
+        }
+
+
+        public static void DicoParse()
+        {
+            List<string> dico = new List<string>();
+            var txt = System.IO.File.ReadAllLines(@"C:\Yann\projets\LaChose\LaChose\resources\dela-fr-public.dic", Encoding.UTF8);
+
+            foreach (string s in txt)
+            {
+                string input = s.Split(',')[0];
+                dico.Add(input);
+            }
+
+            File.WriteAllLines(@"C:\Yann\projets\LaChose\LaChose\resources\dela-fr-public.txt", dico, Encoding.UTF8);
+
 
         }
 
 
         public static void TestJson()
         {
-            var txt = System.IO.File.ReadAllText(@"C:\Yann\projets\LaChose\LaChose\resources\atomes.json", Encoding.UTF8);          
+            var txt = System.IO.File.ReadAllText(@"C:\Yann\projets\LaChose\LaChose\resources\atomes.json", Encoding.UTF8);
             var atomes = JsonConvert.DeserializeObject<List<Atome>>(txt);
             var json = JsonConvert.SerializeObject(atomes);
             File.WriteAllText(@"C:\yann\temp\atomes2.json", json, Encoding.UTF8);
@@ -295,7 +403,7 @@ namespace LaChose
         public static void CsvToJson()
         {
             var csv = new List<string[]>();
-                       
+
             var lines = System.IO.File.ReadAllLines(@"C:\yann\temp\atomes.csv", Encoding.UTF8);
 
             foreach (string line in lines)
@@ -303,7 +411,7 @@ namespace LaChose
 
             string json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(csv);
 
-            System.IO.File.WriteAllText(@"C:\yann\temp\atomes.json", json,  Encoding.UTF8);
+            System.IO.File.WriteAllText(@"C:\yann\temp\atomes.json", json, Encoding.UTF8);
         }
 
         public static void XmlToJson()

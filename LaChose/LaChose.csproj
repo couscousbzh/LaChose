@@ -56,7 +56,10 @@
     <None Include="App.config" />
     <None Include="packages.config" />
     <None Include="resources\atomes.json" />
+    <None Include="resources\dela-fr-public.dic" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="resources\dela-fr-public.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
